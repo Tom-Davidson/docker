@@ -1,6 +1,8 @@
 # Use the bionic image
 FROM ubuntu:bionic
 
+ARG simplerisk_build_artefact
+
 # Maintained by SimpleRisk
 LABEL maintainer="SimpleRisk <support@simplerisk.com>"
 
@@ -46,8 +48,8 @@ RUN sed -i 's/ServerSignature On/ServerSignature Off/g' /etc/apache2/conf-enable
 
 RUN echo %sudo  ALL=NOPASSWD: ALL >> /etc/sudoers
 
-# Download SimpleRisk
-COPY ./simplerisk.tgz /simplerisk.tgz
+# Copy SimpleRisk build artifact
+COPY $simplerisk_build_artefact /simplerisk.tgz
 
 # Extract the SimpleRisk files
 RUN rm -rf /var/www/html

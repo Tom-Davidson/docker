@@ -4,7 +4,10 @@ services:
     container_name: 'simplerisk-www'
     build:
       context: ./simplerisk/
+      args:
+        - simplerisk_build_artefact=simplerisk.tgz
     environment:
+      - MYSQL_SSL_CERTIFICATE_PATH
       - MYSQL_HOSTNAME
       - MYSQL_DATABASE
       - MYSQL_USER

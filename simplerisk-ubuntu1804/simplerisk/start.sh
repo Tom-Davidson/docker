@@ -7,7 +7,7 @@ mkdir -p /etc/apache2/ssl/ssl.crt
 echo ${CERTIFICATE} | sed 's/\\n/\n/g' > /etc/apache2/ssl/ssl.crt/simplerisk.crt
 
 # Update the SimpleRisk config file from the ENV vars
-cat /var/www/config.orig.php | sed "s/DB_HOSTNAME', 'localhost/DB_HOSTNAME', 'database/" | sed "s/DB_PASSWORD', 'simplerisk/DB_PASSWORD', '$MYSQL_PASSWORD/" > /var/www/simplerisk/includes/config.php
+cat /var/www/config.orig.php | sed "s/DB_HOSTNAME', 'localhost/DB_HOSTNAME', '$MYSQL_HOSTNAME/" | sed "s/DB_PASSWORD', 'simplerisk/DB_PASSWORD', '$MYSQL_PASSWORD/" | sed "s/DB_USERNAME', 'simplerisk/DB_USERNAME', '$MYSQL_USER/" > /var/www/simplerisk/includes/config.php
 
 # Start Apache
 /usr/sbin/apache2ctl -D FOREGROUND

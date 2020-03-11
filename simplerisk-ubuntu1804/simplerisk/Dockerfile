@@ -47,13 +47,16 @@ RUN sed -i 's/ServerSignature On/ServerSignature Off/g' /etc/apache2/conf-enable
 RUN echo %sudo  ALL=NOPASSWD: ALL >> /etc/sudoers
 
 # Download SimpleRisk
-ADD https://github.com/simplerisk/bundles/raw/master/simplerisk-20190930-001.tgz /simplerisk.tgz
+COPY ./simplerisk.tgz /simplerisk.tgz
 
 # Extract the SimpleRisk files
 RUN rm -rf /var/www/html
 RUN cd /var/www && tar xvzf /simplerisk.tgz
 RUN chown -R www-data: /var/www/simplerisk
 RUN cp /var/www/simplerisk/includes/config.php /var/www/config.orig.php
+
+ADD https://www.digicert.com/CACerts/BaltimoreCyberTrustRoot.crt.pem /var/www/simplerisk
+RUN chown -R www-data: /var/www/simplerisk
 
 EXPOSE 80
 EXPOSE 443

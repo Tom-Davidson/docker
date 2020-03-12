@@ -2,66 +2,88 @@
 FROM ubuntu:bionic
 
 ARG simplerisk_build_artefact
+ARG db_ssl_cert
 
 # Maintained by SimpleRisk
 LABEL maintainer="SimpleRisk <support@simplerisk.com>"
 
-# Make necessary directories
-RUN mkdir -p /var/log
-RUN mkdir -p /etc/apache2/ssl
-RUN mkdir -p /var/www/simplerisk
-
 # Update the image to the latest packages
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get upgrade -y
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    apt-utils \
+  && apt-get upgrade -y
+
+# Make necessary directories
+RUN mkdir -p /var/log && \
+    mkdir -p /etc/apache2/ssl && \
+    mkdir -p /var/www/simplerisk
 
 # Install required packages
 RUN dpkg-divert --local --rename /usr/bin/ischroot && ln -sf /bin/true /usr/bin/ischroot
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install apache2 php php-mysql php-json mysql-client php-dev libmcrypt-dev php-pear php-ldap php7.2-mbstring nfs-common chrony
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python-setuptools vim-tiny sendmail openssl ufw supervisor
-RUN pecl channel-update pecl.php.net
-RUN yes '' | pecl install mcrypt-1.0.1
-RUN sed -i 's/;extension=xsl/;extension=xsl\nextension=mcrypt.so/g' /etc/php/7.2/apache2/php.ini
-RUN sed -i 's/;extension=xsl/;extension=xsl\nextension=mcrypt.so/g' /etc/php/7.2/cli/php.ini
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    apache2 \
+    libmcrypt-dev \
+    mysql-client \
+    nfs-common chrony \
+    php \
+    php-dev \
+    php-json \
+    php-ldap \
+    php-pear \
+    php7.2-mbstring \
+    php-mysql \
+    openssl \
+    python-setuptools \
+    sendmail \
+    supervisor \
+    ufw \
+    vim-tiny && \
+    pecl channel-update pecl.php.net && \
+    yes '' | pecl install mcrypt-1.0.1 && \
+    sed -i 's/;extension=xsl/;extension=xsl\nextension=mcrypt.so/g' /etc/php/7.2/apache2/php.ini && \
+    sed -i 's/;extension=xsl/;extension=xsl\nextension=mcrypt.so/g' /etc/php/7.2/cli/php.ini
 
 # Install and configure supervisor
-ADD ./supervisord.conf /etc/supervisord.conf
+COPY ./supervisord.conf /etc/supervisord.conf
 RUN service supervisor restart
 
 # Configure Apache
-ADD ./foreground.sh /etc/apache2/foreground.sh
-RUN chmod 755 /etc/apache2/foreground.sh
-ADD ./envvars /etc/apache2/envvars
-ADD ./000-default.conf /etc/apache2/sites-enabled/000-default.conf
-ADD ./default-ssl.conf /etc/apache2/sites-enabled/default-ssl.conf
-RUN sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 5M/g' /etc/php/7.2/apache2/php.ini
-ADD ./start.sh /start.sh
+COPY ./envvars /etc/apache2/envvars
+COPY ./000-default.conf /etc/apache2/sites-enabled/000-default.conf
+COPY ./default-ssl.conf /etc/apache2/sites-enabled/default-ssl.conf
+COPY ./foreground.sh /etc/apache2/foreground.sh
+RUN chmod 755 /etc/apache2/foreground.sh && \
+    sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 5M/g' /etc/php/7.2/apache2/php.ini
+COPY ./start.sh /start.sh
 
 # Activate Apache modules
-RUN phpenmod ldap
-RUN a2enmod rewrite
-RUN a2enmod ssl
-RUN a2enconf security
-RUN sed -i 's/SSLProtocol all -SSLv3/SSLProtocol TLSv1.2/g' /etc/apache2/mods-enabled/ssl.conf
-RUN sed -i 's/#SSLHonorCipherOrder on/SSLHonorCipherOrder on/g' /etc/apache2/mods-enabled/ssl.conf
-RUN sed -i 's/ServerTokens OS/ServerTokens Prod/g' /etc/apache2/conf-enabled/security.conf
-RUN sed -i 's/ServerSignature On/ServerSignature Off/g' /etc/apache2/conf-enabled/security.conf
+RUN phpenmod ldap &&\
+    a2enmod rewrite &&\
+    a2enmod ssl &&\
+    a2enconf security &&\
+    sed -i 's/SSLProtocol all -SSLv3/SSLProtocol TLSv1.2/g' /etc/apache2/mods-enabled/ssl.conf &&\
+    sed -i 's/#SSLHonorCipherOrder on/SSLHonorCipherOrder on/g' /etc/apache2/mods-enabled/ssl.conf &&\
+    sed -i 's/ServerTokens OS/ServerTokens Prod/g' /etc/apache2/conf-enabled/security.conf &&\
+    sed -i 's/ServerSignature On/ServerSignature Off/g' /etc/apache2/conf-enabled/security.conf
 
 RUN echo %sudo  ALL=NOPASSWD: ALL >> /etc/sudoers
 
 # Copy SimpleRisk build artifact
 COPY $simplerisk_build_artefact /simplerisk.tgz
+COPY ${db_ssl_cert} /var/www/simplerisk
 
 # Extract the SimpleRisk files
-RUN rm -rf /var/www/html
-RUN cd /var/www && tar xvzf /simplerisk.tgz
-RUN chown -R www-data: /var/www/simplerisk
-RUN cp /var/www/simplerisk/includes/config.php /var/www/config.orig.php
-
-ADD https://www.digicert.com/CACerts/BaltimoreCyberTrustRoot.crt.pem /var/www/simplerisk
-RUN chown -R www-data: /var/www/simplerisk
+RUN rm -rf /var/www/html && \
+    cd /var/www && \
+    tar xvzf /simplerisk.tgz && \
+    chown -R www-data: /var/www/simplerisk && \
+    cp /var/www/simplerisk/includes/config.php /var/www/config.orig.php
 
 EXPOSE 80
 EXPOSE 443
 
+#RUN useradd --no-log-init -m -G www-data sruser
+#USER sruser
+
 # Start Apache and MySQL
 CMD ["/bin/bash", "/start.sh"]
+

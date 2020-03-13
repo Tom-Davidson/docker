@@ -56,10 +56,11 @@ RUN chmod 755 /etc/apache2/foreground.sh && \
 COPY ./start.sh /start.sh
 
 # Activate Apache modules
-RUN phpenmod ldap &&\
-    a2enmod rewrite &&\
-    a2enmod ssl &&\
-    a2enconf security &&\
+RUN phpenmod ldap && \
+    a2enmod rewrite && \
+    a2enmod ssl && \
+    a2enmod lbmethod_byrequests && \
+    a2enconf security && \
     sed -i 's/SSLProtocol all -SSLv3/SSLProtocol TLSv1.2/g' /etc/apache2/mods-enabled/ssl.conf &&\
     sed -i 's/#SSLHonorCipherOrder on/SSLHonorCipherOrder on/g' /etc/apache2/mods-enabled/ssl.conf &&\
     sed -i 's/ServerTokens OS/ServerTokens Prod/g' /etc/apache2/conf-enabled/security.conf &&\

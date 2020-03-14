@@ -6,7 +6,6 @@ services:
       context: ./simplerisk/
       args:
         - simplerisk_build_artefact=simplerisk.tgz
-        - db_ssl_cert=BaltimoreCyberTrustRoot.crt.pem
     environment:
       - MYSQL_SSL_CERTIFICATE_PATH
       - MYSQL_HOSTNAME

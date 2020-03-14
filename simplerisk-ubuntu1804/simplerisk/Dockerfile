@@ -2,7 +2,6 @@
 FROM ubuntu:bionic
 
 ARG simplerisk_build_artefact
-ARG db_ssl_cert
 
 # Maintained by SimpleRisk
 LABEL maintainer="SimpleRisk <support@simplerisk.com>"
@@ -15,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Make necessary directories
 RUN mkdir -p /var/log && \
     mkdir -p /etc/apache2/ssl && \
-    mkdir -p /var/www/simplerisk
+    mkdir -p /var/www/simplerisk/ssl
 
 # Install required packages
 RUN dpkg-divert --local --rename /usr/bin/ischroot && ln -sf /bin/true /usr/bin/ischroot
@@ -70,7 +69,9 @@ RUN echo %sudo  ALL=NOPASSWD: ALL >> /etc/sudoers
 
 # Copy SimpleRisk build artifact
 COPY $simplerisk_build_artefact /simplerisk.tgz
-COPY ${db_ssl_cert} /var/www/simplerisk
+
+# Get Azure MySQL certificate to enable SSL connections to Azure
+ADD https://www.digicert.com/CACerts/BaltimoreCyberTrustRoot.crt.pem /var/www/simplerisk/ssl
 
 # Extract the SimpleRisk files
 RUN rm -rf /var/www/html && \

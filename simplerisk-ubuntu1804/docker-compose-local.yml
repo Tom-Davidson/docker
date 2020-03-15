@@ -7,7 +7,6 @@ services:
       args:
         - simplerisk_build_artifact=simplerisk.tgz
     environment:
-      - MYSQL_SSL_CERTIFICATE_PATH
       - MYSQL_HOSTNAME
       - MYSQL_DATABASE
       - MYSQL_USER
@@ -19,3 +18,22 @@ services:
     ports:
       - "8080:80"
       - "8443:443"
+    depends_on:
+      - database
+    links:
+      - database
+  database:
+    container_name: 'simplerisk-db'
+    build:
+      context: ./database/
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    volumes:
+      - ./data/database:/var/lib/mysql
+      - ./data/logs/database:/var/log/mysql
+    ports:
+      - "3306"

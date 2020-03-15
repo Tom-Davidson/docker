@@ -1,7 +1,8 @@
 # Use the bionic image
 FROM ubuntu:bionic
 
-ARG simplerisk_build_artefact
+# The build artifact
+ARG simplerisk_build_artifact
 
 # Maintained by SimpleRisk
 LABEL maintainer="SimpleRisk <support@simplerisk.com>"
@@ -68,7 +69,7 @@ RUN phpenmod ldap && \
 RUN echo %sudo  ALL=NOPASSWD: ALL >> /etc/sudoers
 
 # Copy SimpleRisk build artifact
-COPY $simplerisk_build_artefact /simplerisk.tgz
+COPY $simplerisk_build_artifact /simplerisk.tgz
 
 # Get Azure MySQL certificate to enable SSL connections to Azure
 ADD https://www.digicert.com/CACerts/BaltimoreCyberTrustRoot.crt.pem /var/www/simplerisk/ssl

@@ -5,7 +5,7 @@ services:
     build:
       context: ./simplerisk/
       args:
-        - simplerisk_build_artefact=simplerisk.tgz
+        - simplerisk_build_artifact=simplerisk.tgz
     environment:
       - MYSQL_SSL_CERTIFICATE_PATH
       - MYSQL_HOSTNAME

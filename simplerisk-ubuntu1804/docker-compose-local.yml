@@ -37,17 +37,3 @@ services:
       - ./data/logs/database:/var/log/mysql
     ports:
       - "3306"
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:4.8
-    container_name: 'simplerisk-phpmyadmin'
-    environment:
-      PMA_HOST: database
-      PMA_PORT: 3306
-      PMA_USER: simplerisk
-      PMA_PASSWORD: ${MYSQL_PASSWORD}
-    volumes:
-      - ./data/sessions:/sessions
-    ports:
-      - '8081:80'
-    links:
-      - database

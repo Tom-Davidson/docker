@@ -2,9 +2,9 @@
 
 # Update the Apache config from the ENV vars
 mkdir -p /etc/apache2/ssl/ssl.key
-echo "${PRIVATE_KEY}" | base64 -d | sed 's/\\n/\n/g' > /etc/apache2/ssl/ssl.key/simplerisk.key
+printf "%s\n" "${PRIVATE_KEY}" | base64 -d | sed 's/\\n/\n/g' > /etc/apache2/ssl/ssl.key/simplerisk.key
 mkdir -p /etc/apache2/ssl/ssl.crt
-echo "${CERTIFICATE}" | base64 -d | sed 's/\\n/\n/g' > /etc/apache2/ssl/ssl.crt/simplerisk.crt
+printf "%s\n" "${CERTIFICATE}" | base64 -d | sed 's/\\n/\n/g' > /etc/apache2/ssl/ssl.crt/simplerisk.crt
 
 # Update the SimpleRisk config file from the ENV vars
 cat /var/www/config.orig.php | \

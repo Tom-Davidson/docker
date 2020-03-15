@@ -26,7 +26,7 @@ PRIVATE_KEY=$(sed ':a;N;$!ba;s/\n/\\n/g' /bootstrap/simplerisk.key)
 CERTIFICATE=$(sed ':a;N;$!ba;s/\n/\\n/g' /bootstrap/simplerisk.crt)
 # Generate .env
 echo "Generating .env"
-echo "MYSQL_HOSTNAME=localhost" >/bootstrap/.env
+echo "MYSQL_HOSTNAME=simplerisk-db" >/bootstrap/.env
 {
   echo "MYSQL_DATABASE=simplerisk"
   echo "MYSQL_USER=simplerisk"
